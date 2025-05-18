@@ -1,0 +1,45 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>System Monitor</title>
+    <script src="~/js/signalr.js"></script>
+</head>
+<body>
+    <h2>System Information</h2>
+    <p id="threadCount">Threads: Loading...</p>
+    <p id="memoryUsage">Memory Usage: Loading...</p>
+    <p id="workerThreads">Worker Threads: Loading...</p>
+    <p id="ioThreads">I/O Threads: Loading...</p>
+    <p id="cpuUsage">CPU Usage: Loading...</p>
+    <p id="activeRequests">Active Requests: Loading...</p>
+
+    <script>
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/systemhub")
+            .build();
+
+        connection.on("ReceiveSystemInfo", (threadCount, memoryUsage, workerThreadsUsed, maxWorkerThreads, ioThreadsUsed, maxIoThreads, cpuUsage, activeRequests) => {
+            document.getElementById("threadCount").innerText = `Threads: ${threadCount}`;
+            document.getElementById("memoryUsage").innerText = `Memory Usage: ${memoryUsage} MB`;
+            document.getElementById("workerThreads").innerText = `Worker Threads: ${workerThreadsUsed} / ${maxWorkerThreads}`;
+            document.getElementById("ioThreads").innerText = `I/O Threads: ${ioThreadsUsed} / ${maxIoThreads}`;
+            document.getElementById("cpuUsage").innerText = `CPU Usage: ${cpuUsage.toFixed(2)}%`;
+            document.getElementById("activeRequests").innerText = `Active Requests: ${activeRequests}`;
+        });
+
+        connection.start()
+            .then(() => setInterval(() => connection.send("SendSystemInfo"), 1000))
+            .catch(err => console.error(err));
+    </script>
+</body>
+</html>
+
+
+
+
+
