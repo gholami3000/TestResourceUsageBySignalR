@@ -1,4 +1,6 @@
-﻿public class RequestCounterMiddleware
+﻿using Microsoft.AspNetCore.SignalR;
+
+public class RequestCounterMiddleware
 {
     private readonly RequestDelegate _next;
     private static int _activeRequests = 0;

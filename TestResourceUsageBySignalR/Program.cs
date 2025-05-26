@@ -25,7 +25,7 @@ app.UseAuthorization();
 
 //app.MapHub<ChatHub>("/chathub"); // Map the SignalR hub
 app.MapHub<SystemHub2>("/systemhub2");
-
+app.MapHub<SystemHub>("/systemhub");
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");

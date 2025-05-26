@@ -1,0 +1,28 @@
+﻿@using TestResourceUsageBySignalR.Controllers
+@model SystemThreadInfoDto
+@{
+}
+
+<div> @Model.UserThreadCount </div>
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">ThreadId</th>
+            <th scope="col">ThreadState</th>
+            <th scope="col">WaitReason</th>
+            <th scope="col">StartTime</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach(var item in Model.ThreadInfoList)
+        {
+            <tr>
+                <td>@item.ThreadId</td>
+                <td>@item.ThreadState</td>
+                <td>@item.WaitReason</td>
+                <td>@item.StartTime</td>
+            </tr>
+        } 
+            
+    </tbody>
+</table>

@@ -19,9 +19,66 @@
     <p id="activeRequests">Active Requests: Loading...</p>
 
     <script>
-        const connection = new signalR.HubConnectionBuilder()
-            .withUrl("/systemhub")
-            .build();
+
+       const connection = new signalR.HubConnectionBuilder()
+         .withUrl("/systemhub")
+         .build();
+
+        let intervalId = null;
+        async function startConnection() {
+            try {
+                await connection.start();
+                console.log("✅ Connected to SignalR");
+
+                // فقط یک بار interval بساز
+                if (!intervalId) {
+                    intervalId = setInterval(() => {
+                        if (connection.state === signalR.HubConnectionState.Connected) {
+                            connection.send("SendSystemInfo").catch(err => {
+                                console.error("Send error:", err);
+                            });
+                        }
+                    }, 1000);
+                }
+
+            } catch (err) {
+                console.error("❌ Connection failed:", err);
+                setTimeout(startConnection, 5000);
+            }
+        }
+
+
+                // اگر اتصال قطع شد → متوقف کردن ارسال
+        connection.onclose(() => {
+            console.warn("❗ Connection closed");
+            if (intervalId) {
+                clearInterval(intervalId);
+                intervalId = null;
+            }
+            setTimeout(startConnection, 5000); // تلاش مجدد
+        });
+
+        connection.onreconnected(() => {
+            console.log("🔄 Reconnected");
+            startConnection();
+        });
+
+        connection.onreconnecting(() => {
+            console.warn("⏳ Reconnecting...");
+        });
+
+                // قطع اتصال موقع ترک صفحه
+        window.addEventListener("beforeunload", async () => {
+            try {
+                await connection.stop();
+                console.log("SignalR disconnected on page unload");
+            } catch (err) {
+                console.log("Error stopping connection on unload", err);
+            }
+        });
+
+        // شروع اتصال
+        startConnection();
 
         connection.on("ReceiveSystemInfo", (threadCount, memoryUsage, workerThreadsUsed, maxWorkerThreads, ioThreadsUsed, maxIoThreads, cpuUsage, activeRequests) => {
             document.getElementById("threadCount").innerText = `Threads: ${threadCount}`;
@@ -32,9 +89,7 @@
             document.getElementById("activeRequests").innerText = `Active Requests: ${activeRequests}`;
         });
 
-        connection.start()
-            .then(() => setInterval(() => connection.send("SendSystemInfo"), 1000))
-            .catch(err => console.error(err));
+      
     </script>
 </body>
 </html>
